@@ -1,6 +1,11 @@
 const userModel = require('../models/user.model');
+const blackListTokenModel = require('../models/backlist.model');
 const bcrypt = require('bcryptjs'); // Import bcryptjs for password hashing
 const jwt = require('jsonwebtoken'); // Import jsonwebtoken for generating JWT tokens
+
+
+
+
 /**
  * @name registerUserController
  * @description Controller function to handle user registration
@@ -92,10 +97,34 @@ async function loginUserController(req, res) {
         }
     }   
     )
- }
+}
+ 
+/**
+ * @name logoutUserController
+ * @description Controller function to handle user logout
+ * @access Public
+ */
+async function logoutUserController(req, res) {
+    const token = req.cookies.token; // Get the token from the request cookies
+
+    if (!token) {
+        return res.status(400).json({
+            message: 'No token found'
+        }); // Return a 400 Bad Request response if no token is found
+    }
+    const blackListedToken = await blackListTokenModel.create({ token }); // Add the token to the blacklist collection
+    
+    res.clearCookie('token'); // Clear the token cookie from the response
+
+    res.status(200).json({
+        message: 'User logged out successfully'
+    }); // Return a 200 OK response indicating successful logout
+     
+}
 
 
 module.exports = {
     registerUserController,
-    loginUserController
+    loginUserController,
+    logoutUserController
 }
