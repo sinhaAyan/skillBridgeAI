@@ -101,7 +101,7 @@ async function loginUserController(req, res) {
  
 /**
  * @name logoutUserController
- * @description Controller function to handle user logout
+ * @description Controller function to handle user logout and add the token to the blacklist
  * @access Public
  */
 async function logoutUserController(req, res) {
@@ -122,9 +122,34 @@ async function logoutUserController(req, res) {
      
 }
 
+/**
+ * @name getMeController
+ * @description Controller function to get the currently logged in user details
+ * @access Private
+ */
+async function getMeController(req, res) {
+    const userId = req.user.id; // Get the user ID from the request object (set by the authenticate middleware)
+    const user = await userModel.findById(userId).select('-password'); // Find the user by ID and exclude the password field
+    if (!user) {
+        return res.status(404).json({
+            message: 'User not found'
+        }); // Return a 404 Not Found response if the user does not exist
+    }
+
+    res.status(200).json({
+        message: 'User details fetched successfully',
+        user: {
+            id: user._id,
+            userName: user.userName,
+            email: user.email
+        }
+    }); // Return a 200 OK response with the user details
+}
+
 
 module.exports = {
     registerUserController,
     loginUserController,
-    logoutUserController
+    logoutUserController,
+    getMeController
 }
